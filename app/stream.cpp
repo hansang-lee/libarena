@@ -6,8 +6,18 @@
 #include "camera/api/lucid.h"
 
 int main() {
-    const auto system  = camera::openSystem<camera::lucid::System>();
-    const auto scanned = system->scan();
+    const auto system = camera::openSystem<camera::lucid::System>();
+
+    std::vector<camera::DeviceInfo> scanned;
+    try {
+        scanned = system->scan();
+    } catch (const camera::exception::DeviceNotFound& e) {
+        std::cerr << e.what() << std::endl;
+        return -1;
+    } catch (const camera::exception::GenericException& e) {
+        std::cerr << e.what() << std::endl;
+        return -1;
+    }
 
     std::vector<std::shared_ptr<camera::IDevice>> devices;
 
@@ -28,11 +38,15 @@ int main() {
 
         try {
             devices.emplace_back(system->init(item));
-        } catch (const camera::exception::UnknownModel& e) { continue; }
+        } catch (const camera::exception::UnknownModel& e) {
+            std::cerr << e.what() << std::endl;
+            continue;
+        }
     }
 
     if (devices.empty()) {
-        return 1;
+        std::cerr << "No device initialized" << std::endl;
+        return -1;
     }
 
     for (std::size_t i = 0; i < devices.size(); i++) {
@@ -95,7 +109,9 @@ int main() {
                     if (!image->complete) {
                         break;
                     }
-                } catch (const camera::exception::Timeout& e) { std::cerr << e.what() << std::endl; }
+                } catch (const camera::exception::Timeout& e) {
+                    std::cerr << e.what() << std::endl;
+                }
             }
             barrier.fetch_sub(1);
         });

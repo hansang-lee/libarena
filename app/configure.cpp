@@ -7,8 +7,19 @@
 int main() {
     const auto system = camera::openSystem<camera::lucid::System>();
 
-    const auto scanned = system->scan();
+    std::vector<camera::DeviceInfo> scanned;
+    try {
+        scanned = system->scan();
+    } catch (const camera::exception::DeviceNotFound& e) {
+        std::cerr << e.what() << std::endl;
+        return -1;
+    } catch (const camera::exception::GenericException& e) {
+        std::cerr << e.what() << std::endl;
+        return -1;
+    }
+
     if (scanned.empty()) {
+        std::cerr << "No device found" << std::endl;
         return -1;
     }
 

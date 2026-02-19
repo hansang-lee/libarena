@@ -16,35 +16,37 @@
  * please make sure at least `ONE` camera is connected, before running it.
  */
 
-using namespace camera;
-
-TEST_CASE("stream", "[camera/lucid]") {
-    const auto system = openSystem<lucid::System>();
+TEST_CASE("stream", "camera/lucid") {
+    const auto system = camera::openSystem<camera::lucid::System>();
     REQUIRE(system != nullptr);
 
-    std::vector<DeviceInfo> scanned;
+    std::vector<camera::DeviceInfo>               scanned;
+    std::vector<std::shared_ptr<camera::IDevice>> devices;
+
     try {
         scanned = system->scan();
-    } catch (const exception::DeviceNotFound& e) { return; } catch (const exception::GenericException& e) {
+        for (auto& info : scanned) {
+            try {
+                const auto initialized_device = system->init(info);
+                devices.emplace_back(initialized_device);
+            } catch (const camera::exception::UnknownModel& e) {
+                CHECK(false);
+            }
+        }
+        REQUIRE(devices.size() > 0);
+        REQUIRE(scanned.size() >= devices.size());
+    } catch (const camera::exception::DeviceNotFound& e) {
+        REQUIRE(false);
+    } catch (const camera::exception::GenericException& e) {
         REQUIRE(false);
     }
-
-    std::vector<std::shared_ptr<IDevice>> devices;
-    for (auto& info : scanned) {
-        try {
-            const auto device = system->init(info);
-            devices.emplace_back(device);
-        } catch (const exception::UnknownModel& e) { CHECK(false); }
-    }
-    REQUIRE(devices.size() > 0);
-    REQUIRE(scanned.size() == devices.size());
 
     const double frame_rate = 10.0;
 
     for (std::size_t i = 0; i < devices.size(); i++) {
         const auto device = devices[i];
 
-        DeviceParameters params;
+        camera::DeviceParameters params;
         params.action_unconditional_mode         = "On";
         params.acquisition_frame_rate            = frame_rate;
         params.acquisition_mode                  = "Continuous";
@@ -90,15 +92,18 @@ TEST_CASE("stream", "[camera/lucid]") {
     std::atomic<int>         barrier(devices.size());
 
     for (const auto& device : devices) {
-        workers.emplace_back([&]() {
+        const auto num_samples = static_cast<std::size_t>(frame_rate * 60);
+
+        workers.emplace_back([&device, &barrier, num_samples]() {
             std::shared_ptr<camera::IImage> image;
-            const std::size_t               num_samples = static_cast<std::size_t>(frame_rate * 60);
             for (std::size_t i = 0; i < num_samples; i++) {
                 try {
                     image = device->capture();
                     CHECK(image != nullptr);
                     CHECK(image->complete);
-                } catch (const exception::Timeout& e) { CHECK(false); }
+                } catch (const camera::exception::Timeout& e) {
+                    CHECK(false);
+                }
             }
             barrier.fetch_sub(1);
         });

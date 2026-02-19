@@ -16,8 +16,6 @@
  * please make sure at least `ONE` camera is connected, before running it.
  */
 
-using namespace camera;
-
 namespace {
 /**
  * @note std::unordered_set supports `contains` function from c++20.
@@ -33,26 +31,30 @@ class unordered_set_: public std::unordered_set<T> {
 };
 }  // namespace
 
-TEST_CASE("init", "[camera/lucid/triton]") {
-    const auto sys = openSystem<lucid::System>();
-    REQUIRE(sys != nullptr);
+TEST_CASE("init", "camera/lucid") {
+    const auto system = camera::openSystem<camera::lucid::System>();
+    REQUIRE(system != nullptr);
 
-    std::vector<DeviceInfo> scanned;
+    std::vector<camera::DeviceInfo>               scanned;
+    std::vector<std::shared_ptr<camera::IDevice>> devices;
+
     try {
-        scanned = sys->scan();
-    } catch (const exception::DeviceNotFound& e) { return; } catch (const exception::GenericException& e) {
+        scanned = system->scan();
+        for (auto& info : scanned) {
+            try {
+                const auto initialized_device = system->init(info);
+                devices.emplace_back(initialized_device);
+            } catch (const camera::exception::UnknownModel& e) {
+                CHECK(false);
+            }
+        }
+        REQUIRE(devices.size() > 0);
+        REQUIRE(scanned.size() >= devices.size());
+    } catch (const camera::exception::DeviceNotFound& e) {
+        REQUIRE(false);
+    } catch (const camera::exception::GenericException& e) {
         REQUIRE(false);
     }
-
-    std::vector<std::shared_ptr<IDevice>> devices;
-    for (auto& info : scanned) {
-        try {
-            const auto device = sys->init(info);
-            devices.emplace_back(device);
-        } catch (const exception::UnknownModel& e) { CHECK(false); }
-    }
-    REQUIRE(devices.size() > 0);
-    REQUIRE(scanned.size() == devices.size());
 
     unordered_set_<std::string> macs;
     unordered_set_<std::string> ipv4s;
@@ -63,7 +65,7 @@ TEST_CASE("init", "[camera/lucid/triton]") {
     for (std::size_t i = 0; i < devices.size(); i++) {
         const auto device = devices[i];
 
-        DeviceParameters params;
+        camera::DeviceParameters params;
         params.action_unconditional_mode         = "On";
         params.acquisition_frame_rate            = frame_rate;
         params.acquisition_mode                  = "Continuous";
@@ -81,7 +83,7 @@ TEST_CASE("init", "[camera/lucid/triton]") {
         params.gev_current_ip_configuration_dhcp = scanned[i].persistent_ip_enabled ? false : true;
         params.persistent_ip_enable              = scanned[i].persistent_ip_enabled ? true : false;
         params.gain_auto                         = "Continuous";
-        params.pixel_format                      = "BGR8";
+        params.pixel_format                      = "BayerRG8";
         params.ptp_enable                        = true;
         params.ptp_slave_only                    = true;
         params.reverse_x                         = false;

@@ -9,36 +9,35 @@
 
 #include "camera/api/lucid.h"
 
-using namespace camera;
+TEST_CASE("triggered-sync", "camera/lucid") {
+    const auto system = camera::openSystem<camera::lucid::System>();
+    REQUIRE(system != nullptr);
 
-constexpr double ERROR_BASE_LINE = 100000.0;  // ns
+    std::vector<camera::DeviceInfo>               scanned;
+    std::vector<std::shared_ptr<camera::IDevice>> devices;
 
-TEST_CASE("multi-synced", "[camera/lucid/triton]") {
-    /* initializing lucid system */
-    const auto sys = openSystem<lucid::System>();
-    REQUIRE(sys != nullptr);
-
-    std::vector<DeviceInfo> scanned;
     try {
-        scanned = sys->scan();
-    } catch (const exception::DeviceNotFound& e) { return; } catch (const exception::GenericException& e) {
+        scanned = system->scan();
+        for (auto& info : scanned) {
+            try {
+                const auto initialized_device = system->init(info);
+                devices.emplace_back(initialized_device);
+            } catch (const camera::exception::UnknownModel& e) {
+                CHECK(false);
+            }
+        }
+        REQUIRE(devices.size() > 0);
+        REQUIRE(scanned.size() == devices.size());
+    } catch (const camera::exception::DeviceNotFound& e) {
+        REQUIRE(false);
+    } catch (const camera::exception::GenericException& e) {
         REQUIRE(false);
     }
-
-    std::vector<std::shared_ptr<IDevice>> devices;
-    for (auto& info : scanned) {
-        try {
-            const auto device = sys->init(info);
-            devices.emplace_back(device);
-        } catch (const exception::UnknownModel& e) { CHECK(false); }
-    }
-    REQUIRE(devices.size() > 0);
-    REQUIRE(scanned.size() == devices.size());
 
     for (std::size_t i = 0; i < devices.size(); i++) {
         const auto device = devices[i];
 
-        DeviceParameters params;
+        camera::DeviceParameters params;
 
         /* configuring device parameters */
         /**
@@ -50,6 +49,7 @@ TEST_CASE("multi-synced", "[camera/lucid/triton]") {
         params.action_device_key = 0x00000001;
         params.action_group_key  = 0x00000001;
         params.action_group_mask = 0x00000001;
+
         /**
          * @note for the case of lucid-vision-labs products,
          * to enable the action trigger-mode, acquisition frame rate
@@ -81,6 +81,7 @@ TEST_CASE("multi-synced", "[camera/lucid/triton]") {
         params.target_brightness                 = 90;
         params.transfer_control_mode             = "UserControlled";
         params.transfer_operation_mode           = "Continuous";
+
         /**
          * @note for the case of lucid-vision-labs products,
          * to enable the action trigger-mode, the parameters below
@@ -92,11 +93,9 @@ TEST_CASE("multi-synced", "[camera/lucid/triton]") {
         params.trigger_overlap    = "PreviousFrame";
         params.trigger_selector   = "FrameStart";
         params.trigger_source     = "Action0";
-        params.trigger_delay      = static_cast<double>(i * 100000.0 / devices.size());
+        params.trigger_delay      = 0.0;
 
         device->config(params);
-
-        /* opening and streaming devices */
         device->open();
         device->stream();
     }
@@ -104,18 +103,19 @@ TEST_CASE("multi-synced", "[camera/lucid/triton]") {
     bool skipped_initial_iteration = false;
 
     int64_t scheduled_time = std::chrono::system_clock::now().time_since_epoch().count();
-    sys->fireActionCommand(scheduled_time);
+    system->fireActionCommand(scheduled_time);
 
     for (int i = 0; i < 500; i++) {
-        sys->fireActionCommand(scheduled_time + 1e+8);
-        for (std::size_t j = 0; j < devices.size(); j++) {
-            const auto image = devices[j]->capture();
+        system->fireActionCommand(scheduled_time + 1e+8);
+
+        for (const auto& device : devices) {
+            const auto image = device->capture();
+
             if (skipped_initial_iteration) {
                 CHECK(image != nullptr);
                 CHECK(image->complete);
-                const double dt =
-                    std::abs(scheduled_time + (j * 1e+8 / devices.size()) - static_cast<int64_t>(image->header.stamp));
-                CHECK(dt < ERROR_BASE_LINE);
+                const double dt = std::abs(scheduled_time - static_cast<int64_t>(image->header.stamp));
+                CHECK(dt < 100000.0);
             }
         }
         skipped_initial_iteration = true;

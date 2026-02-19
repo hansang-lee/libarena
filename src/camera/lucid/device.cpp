@@ -7,7 +7,7 @@
 #include "camera/lucid/network.hpp"
 #include "camera/lucid/types.h"
 
-#include "camera/lucid/utils/model.h"
+#include "camera/lucid/utils.h"
 
 namespace camera {
 namespace lucid {

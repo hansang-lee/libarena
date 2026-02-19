@@ -14,7 +14,7 @@
 #include <camera/lucid/spec.h>
 #include <camera/lucid/types.h>
 
-#include <camera/lucid/utils/model.h>
+#include <camera/lucid/utils.h>
 
 #include <camera/exception.h>
 #include <camera/factory.h>

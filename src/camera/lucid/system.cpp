@@ -3,7 +3,7 @@
 #include "camera/lucid/network.hpp"
 #include "camera/lucid/system.hpp"
 
-#include "camera/lucid/utils/model.h"
+#include "camera/lucid/utils.h"
 
 namespace camera {
 namespace lucid {

@@ -31,7 +31,7 @@ add_library(${PROJECT_NAME} SHARED
   include/camera/lucid/system.hpp
   include/camera/lucid/spec.h
   include/camera/lucid/types.h
-  include/camera/lucid/utils/model.h
+  include/camera/lucid/utils.h
 
   internal/camera/lucid/spec/common.hpp
   internal/camera/lucid/spec/htp003s_001.hpp

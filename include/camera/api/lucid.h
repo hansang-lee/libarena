@@ -3,9 +3,9 @@
 #include <ArenaApi.h>
 #include <GenApi/GenApi.h>
 
-#include <camera/interface/device.h>
-#include <camera/interface/image.h>
-#include <camera/interface/system.h>
+#include <camera/device.h>
+#include <camera/image.h>
+#include <camera/system.h>
 
 #include <camera/lucid/config.hpp>
 #include <camera/lucid/device.hpp>

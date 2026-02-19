@@ -6,7 +6,7 @@
 
 #include <ArenaApi.h>
 
-#include "camera/interface/image.h"
+#include "camera/image.h"
 #include "camera/lucid/types.h"
 
 namespace camera {

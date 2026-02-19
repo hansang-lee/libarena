@@ -2,8 +2,8 @@
 
 #include <ArenaApi.h>
 
-#include "camera/interface/device.h"
-#include "camera/interface/system.h"
+#include "camera/device.h"
+#include "camera/system.h"
 
 #include "camera/lucid/device.hpp"
 #include "camera/lucid/spec.h"

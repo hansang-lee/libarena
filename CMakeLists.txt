@@ -23,9 +23,9 @@ add_library(${PROJECT_NAME} SHARED
   include/camera/api/lucid.h
   include/camera/exception.h
   include/camera/factory.h
-  include/camera/interface/device.h
-  include/camera/interface/image.h
-  include/camera/interface/system.h
+  include/camera/device.h
+  include/camera/image.h
+  include/camera/system.h
   include/camera/lucid/config.hpp
   include/camera/lucid/device.hpp
   include/camera/lucid/system.hpp

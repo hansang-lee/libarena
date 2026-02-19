@@ -2,7 +2,7 @@
 
 #include <ArenaApi.h>
 
-#include <camera/interface/device.h>
+#include <camera/device.h>
 
 #include <vector>
 
@@ -12,8 +12,8 @@ class ISystem {
    public:
     virtual ~ISystem() = default;
 
-    [[nodiscard]] virtual const std::shared_ptr<IDevice> init(DeviceInfo device_info) = 0;
     [[nodiscard]] virtual const std::vector<DeviceInfo>  scan(const int timeout_ms)   = 0;
+    [[nodiscard]] virtual const std::shared_ptr<IDevice> init(DeviceInfo device_info) = 0;
 
     [[nodiscard]] virtual const std::vector<std::shared_ptr<IDevice>>& devices() const { return devices_; }
 

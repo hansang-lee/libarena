@@ -65,7 +65,9 @@ void autoConfigureIP(Arena::ISystem* sys, std::vector<Arena::DeviceInfo>& device
 
             sys->ForceIp(mac_addr, new_ip_addr, gev_sub_mask, 0);
         }
-    } catch (const exception::GenericException& e) { throw exception::GenericException(); }
+    } catch (const exception::GenericException& e) {
+        throw exception::GenericException();
+    }
 }
 
 }  // namespace network

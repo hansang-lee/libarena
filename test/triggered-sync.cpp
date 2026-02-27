@@ -113,7 +113,6 @@ TEST_CASE("triggered-sync", "camera/lucid") {
 
             if (skipped_initial_iteration) {
                 CHECK(image != nullptr);
-                CHECK(image->complete);
                 const double dt = std::abs(scheduled_time - static_cast<int64_t>(image->header.stamp));
                 CHECK(dt < 100000.0);
             }

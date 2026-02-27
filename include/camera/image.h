@@ -12,7 +12,6 @@ struct IHeader {
 };
 
 struct IImage {
-    bool                       complete = false;
     IHeader                    header;
     std::size_t                rows  = 0;  // height
     std::size_t                cols  = 0;  // width

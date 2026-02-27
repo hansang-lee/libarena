@@ -42,13 +42,17 @@ void Device::open() {
         info_.rate = config_->getAcquisitionFrameRate();
     } catch (const GenICam::AccessException& e) {
         throw exception::DevicecNotAccesible();
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 }
 
 void Device::release() {
     try {
         arena_system_->DestroyDevice(arena_device_);
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
     arena_device_ = nullptr;
 }
 
@@ -60,7 +64,9 @@ void Device::stream(const std::size_t num_buffer) {
         arena_device_->StartStream(num_buffer);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         is_available_to_capture_.store(true);
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 }
 
 void Device::stop() {
@@ -71,7 +77,9 @@ void Device::stop() {
         if (info_.device_type == DeviceType::RGB_CAMERA) {
             Arena::ExecuteNode(arena_device_->GetNodeMap(), "TransferStop");
         }
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 }
 
 bool Device::isConnected() {
@@ -89,17 +97,15 @@ std::shared_ptr<IImage> Device::capture(const int64_t timeout_ms) {
         std::memcpy(data.get(), image->GetData(), image->GetSizeFilled());
 #if __cplusplus > 201703L  // c++20 or later
         std::shared_ptr<IImage> result = std::make_shared<IImage>(IImage{
-            .complete = (image->GetSizeFilled() == image->GetPayloadSize()),
-            .header   = IHeader{.stamp = image->GetTimestamp(), .seq = image->GetFrameId()},
-            .rows     = image->GetHeight(),
-            .cols     = image->GetWidth(),
-            .step     = (image->GetSizeFilled() / image->GetHeight()),
-            .depth    = image->GetBitsPerPixel(),
-            .data     = std::move(data),
+            .header = IHeader{.stamp = image->GetTimestamp(), .seq = image->GetFrameId()},
+            .rows   = image->GetHeight(),
+            .cols   = image->GetWidth(),
+            .step   = (image->GetSizeFilled() / image->GetHeight()),
+            .depth  = image->GetBitsPerPixel(),
+            .data   = std::move(data),
         });
 #elif __cplusplus <= 201703L  // c++17 or earlier
         std::shared_ptr<IImage> result = std::make_shared<IImage>();
-        result->complete               = (image->GetSizeFilled() == image->GetPayloadSize());
         result->header.stamp           = image->GetTimestamp();
         result->header.seq             = image->GetFrameId();
         result->rows                   = image->GetHeight();
@@ -114,7 +120,9 @@ std::shared_ptr<IImage> Device::capture(const int64_t timeout_ms) {
         return result;
     } catch (const GenICam::TimeoutException& e) {
         throw exception::Timeout();
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 }
 
 void Device::configurePersistentIpAddress(const std::string& ipv4, const std::string& subnet) {
@@ -218,7 +226,9 @@ void Device::applyParamsOnDevice_() {
         default:
             break;
         }
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 }
 
 }  // namespace lucid

@@ -12,7 +12,9 @@ System::System() {
     try {
         arena_system_   = Arena::OpenSystem();
         arena_node_map_ = arena_system_->GetTLSystemNodeMap();
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 
     setDeviceKey(0x00000001);
     setGroupKey(0x00000001);
@@ -29,7 +31,9 @@ System::~System() {
         // }
         try {
             Arena::CloseSystem(arena_system_);
-        } catch (const GenICam::GenericException& e) { std::cerr << e.what() << std::endl; }
+        } catch (const GenICam::GenericException& e) {
+            std::cerr << e.what() << std::endl;
+        }
     }
 }
 
@@ -37,7 +41,9 @@ const std::shared_ptr<IDevice> System::init(DeviceInfo device_info) {
     std::shared_ptr<IDevice> device;
     try {
         device = updateDevice_(device_info);
-    } catch (const exception::UnknownModel& e) { throw exception::UnknownModel(); }
+    } catch (const exception::UnknownModel& e) {
+        throw exception::UnknownModel();
+    }
 
     return device;
 }
@@ -46,7 +52,9 @@ const std::vector<DeviceInfo> System::scan(const int timeout_ms) {
     try {
         arena_system_->UpdateDevices(timeout_ms);
         last_scanned_devices_info_ = arena_system_->GetDevices();
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 
     if (last_scanned_devices_info_.empty()) {
         throw exception::DeviceNotFound();
@@ -78,31 +86,41 @@ void System::fireActionCommand(const int64_t future_time_point) {
     try {
         Arena::SetNodeValue(arena_system_->GetTLSystemNodeMap(), "ActionCommandExecuteTime", future_time_point);
         Arena::ExecuteNode(arena_system_->GetTLSystemNodeMap(), "ActionCommandFireCommand");
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 }
 
 void System::setDeviceKey(const int64_t device_key) {
     try {
         Arena::SetNodeValue<int64_t>(arena_node_map_, "ActionCommandDeviceKey", device_key);
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 }
 
 void System::setGroupKey(const int64_t group_key) {
     try {
         Arena::SetNodeValue<int64_t>(arena_node_map_, "ActionCommandGroupKey", group_key);
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 }
 
 void System::setGroupMask(const int64_t group_mask) {
     try {
         Arena::SetNodeValue<int64_t>(arena_node_map_, "ActionCommandGroupMask", group_mask);
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 }
 
 void System::setTargetIp(const int64_t target_ip) {
     try {
         Arena::SetNodeValue<int64_t>(arena_node_map_, "ActionCommandTargetIP", target_ip);
-    } catch (const GenICam::GenericException& e) { throw exception::GenericException(e.what()); }
+    } catch (const GenICam::GenericException& e) {
+        throw exception::GenericException(e.what());
+    }
 }
 
 bool System::IsDeviceModelSupported(DeviceInfo device_info) {
@@ -127,7 +145,9 @@ void System::configureAddressIpAuto(std::vector<DeviceInfo> devices_info) {
     try {
         network::autoConfigureIP(arena_system_, matched);
         arena_system_->UpdateDevices(1000);
-    } catch (const exception::GenericException& e) { throw exception::GenericException(); }
+    } catch (const exception::GenericException& e) {
+        throw exception::GenericException();
+    }
 }
 
 void System::configureAddressIpAuto(DeviceInfo device_info) {
@@ -145,7 +165,9 @@ void System::configureAddressIpAuto(DeviceInfo device_info) {
             _info.push_back(arena_device_info);
             network::autoConfigureIP(arena_system_, _info);
             arena_system_->UpdateDevices(1000);
-        } catch (const exception::GenericException& e) { throw exception::GenericException(); }
+        } catch (const exception::GenericException& e) {
+            throw exception::GenericException();
+        }
         break;
     }
 }

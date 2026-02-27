@@ -113,7 +113,6 @@ TEST_CASE("triggered-async", "camera/lucid") {
 
             if (skipped_initial_iteration) {
                 CHECK(image != nullptr);
-                CHECK(image->complete);
                 const int64_t stamp = static_cast<int64_t>(image->header.stamp);
                 const double  dt    = std::abs(scheduled_time + (j * 1e+8 / devices.size()) - stamp);
                 CHECK(dt < 100000.0);

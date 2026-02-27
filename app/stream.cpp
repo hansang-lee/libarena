@@ -106,9 +106,6 @@ int main() {
             while (!stop_requested.load()) {
                 try {
                     const auto image = device->capture();
-                    if (!image->complete) {
-                        break;
-                    }
                 } catch (const camera::exception::Timeout& e) {
                     std::cerr << e.what() << std::endl;
                 }

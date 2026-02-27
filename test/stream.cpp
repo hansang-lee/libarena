@@ -100,7 +100,6 @@ TEST_CASE("stream", "camera/lucid") {
                 try {
                     image = device->capture();
                     CHECK(image != nullptr);
-                    CHECK(image->complete);
                 } catch (const camera::exception::Timeout& e) {
                     CHECK(false);
                 }

@@ -92,32 +92,22 @@ bool Device::isAvailable() {
 
 std::shared_ptr<IImage> Device::capture(const int64_t timeout_ms) {
     try {
-        const auto                 image = arena_device_->GetImage(timeout_ms);
-        std::unique_ptr<uint8_t[]> data(new uint8_t[image->GetSizeFilled()]);
-        std::memcpy(data.get(), image->GetData(), image->GetSizeFilled());
-#if __cplusplus > 201703L  // c++20 or later
-        std::shared_ptr<IImage> result = std::make_shared<IImage>(IImage{
-            .header = IHeader{.stamp = image->GetTimestamp(), .seq = image->GetFrameId()},
-            .rows   = image->GetHeight(),
-            .cols   = image->GetWidth(),
-            .step   = (image->GetSizeFilled() / image->GetHeight()),
-            .depth  = image->GetBitsPerPixel(),
-            .data   = std::move(data),
+        auto*      image = arena_device_->GetImage(timeout_ms);
+        const auto size  = image->GetSizeFilled();
+
+        auto* img   = new IImage();
+        img->header = {image->GetTimestamp(), image->GetFrameId()};
+        img->rows   = image->GetHeight();
+        img->cols   = image->GetWidth();
+        img->step   = (size / image->GetHeight());
+        img->depth  = image->GetBitsPerPixel();
+        img->data   = static_cast<const uint8_t*>(image->GetData());
+
+        /* RequeueBuffer() is called, when the last reference is dropped */
+        return std::shared_ptr<IImage>(img, [device = arena_device_, image](IImage* p) {
+            device->RequeueBuffer(image);
+            delete p;
         });
-#elif __cplusplus <= 201703L  // c++17 or earlier
-        std::shared_ptr<IImage> result = std::make_shared<IImage>();
-        result->header.stamp           = image->GetTimestamp();
-        result->header.seq             = image->GetFrameId();
-        result->rows                   = image->GetHeight();
-        result->cols                   = image->GetWidth();
-        result->step                   = (image->GetSizeFilled() / image->GetHeight());
-        result->depth                  = image->GetBitsPerPixel();
-        result->data                   = std::move(data);
-#else
-        throw std::runtime_error("Unsupported C++ Standard Version");
-#endif
-        arena_device_->RequeueBuffer(image);
-        return result;
     } catch (const GenICam::TimeoutException& e) {
         throw exception::Timeout();
     } catch (const GenICam::GenericException& e) {
@@ -146,16 +136,16 @@ void Device::applyParamsOnDevice_() {
         config_->setAcquisitionMode(param_.acquisition_mode.c_str());
         config_->setAcquisitionStartMode(param_.acquisition_start_mode.c_str());
 
-        config_->setBinningSelector(param_.binning_selector.c_str());
+        config_->setBinningSelector(param_.binning_selector);
         if (config_->getBinningSelector() == "Digital") {
             config_->setBinningHorizontal(param_.binning_horizontal);
             config_->setBinningHorizontalMode(param_.binning_horizontal_mode.c_str());
             config_->setBinningVertical(param_.binning_vertical);
-            config_->setBinningVerticalMode(param_.binning_vertical_mode.c_str());
+            config_->setBinningVerticalMode(param_.binning_vertical_mode);
         }
 
-        config_->setGainAuto(param_.gain_auto.c_str());
-        config_->setGevSCDA(param_.gev_scda.c_str());
+        config_->setGainAuto(param_.gain_auto);
+        config_->setGevSCDA(param_.gev_scda);
 
         if (param_.gev_current_ip_configuration_dhcp) {
             config_->setGevCurrentIPConfigurationDHCP(true);
@@ -170,27 +160,27 @@ void Device::applyParamsOnDevice_() {
         const auto h     = ((param_.height <= 0) || (param_.height >= max_h)) ? max_h : param_.height;
         config_->setHeight(h);
 
-        config_->setPixelFormat(param_.pixel_format.c_str());
+        config_->setPixelFormat(param_.pixel_format);
         config_->setPtpEnable(param_.ptp_enable);
         config_->setPtpSlaveOnly(param_.ptp_slave_only);
 
         config_->setStreamAutoNegotiatePacketSize(param_.stream_auto_negotiate_packet_size);
-        config_->setStreamBufferHandlingMode(param_.stream_buffer_handling_mode.c_str());
+        config_->setStreamBufferHandlingMode(param_.stream_buffer_handling_mode);
         config_->setStreamMulticastEnable(param_.stream_multicast_enable);
         config_->setStreamPacketResendEnable(param_.stream_packet_resend_enable);
-        config_->setTransferControlMode(param_.transfer_control_mode.c_str());
+        config_->setTransferControlMode(param_.transfer_control_mode);
         config_->setTransferSelector("Stream0");
 
-        config_->setTriggerMode(param_.trigger_mode.c_str());
+        config_->setTriggerMode(param_.trigger_mode);
         if (config_->getTriggerMode() == "On") {
-            config_->setTriggerActivation(param_.trigger_activation.c_str());
+            config_->setTriggerActivation(param_.trigger_activation);
             config_->setTriggerDelay(param_.trigger_delay);
-            config_->setTriggerOverlap(param_.trigger_overlap.c_str());
+            config_->setTriggerOverlap(param_.trigger_overlap);
             if (config_->getTriggerOverlap() == "Off") {
-                config_->setTriggerLatency(param_.trigger_latency.c_str());
+                config_->setTriggerLatency(param_.trigger_latency);
             }
-            config_->setTriggerSelector(param_.trigger_selector.c_str());
-            config_->setTriggerSource(param_.trigger_source.c_str());
+            config_->setTriggerSelector(param_.trigger_selector);
+            config_->setTriggerSource(param_.trigger_source);
         }
 
         const bool enable_rate = ((param_.acquisition_frame_rate > 0.0) && (config_->getTriggerMode() != "On"));
@@ -201,9 +191,9 @@ void Device::applyParamsOnDevice_() {
 
         switch (info_.device_type) {
         case DeviceType::RGB_CAMERA:
-            config_->setExposureAuto(param_.exposure_auto.c_str());
+            config_->setExposureAuto(param_.exposure_auto);
             if (config_->getExposureAuto() == "Continuous") {
-                config_->setExposureAutoLimitAuto(param_.exposure_auto_limit_auto.c_str());
+                config_->setExposureAutoLimitAuto(param_.exposure_auto_limit_auto);
                 if ((config_->getExposureAutoLimitAuto()) == "Off") {
                     config_->setExposureAutoLowerLimit(param_.exposure_auto_lower_limit);
                     config_->setExposureAutoUpperLimit(param_.exposure_auto_upper_limit);
@@ -216,11 +206,11 @@ void Device::applyParamsOnDevice_() {
             config_->setReverseY(param_.reverse_y);
 
             config_->setTargetBrightness(param_.target_brightness);
-            config_->setTransferOperationMode(param_.transfer_operation_mode.c_str());
+            config_->setTransferOperationMode(param_.transfer_operation_mode);
             break;
         case DeviceType::TOF_CAMERA:
             config_->setScan3dModeSelector("Processed");
-            config_->setConversionGain(param_.conversion_gain.c_str());
+            config_->setConversionGain(param_.conversion_gain);
             break;
 
         default:

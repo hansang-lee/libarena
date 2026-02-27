@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 namespace camera {
 
@@ -12,12 +11,12 @@ struct IHeader {
 };
 
 struct IImage {
-    IHeader                    header;
-    std::size_t                rows  = 0;  // height
-    std::size_t                cols  = 0;  // width
-    std::size_t                step  = 0;
-    std::size_t                depth = 0;
-    std::unique_ptr<uint8_t[]> data;
+    IHeader        header;
+    std::size_t    rows  = 0;  // height
+    std::size_t    cols  = 0;  // width
+    std::size_t    step  = 0;
+    std::size_t    depth = 0;
+    const uint8_t* data  = nullptr;
 };
 
 }  // namespace camera

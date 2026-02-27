@@ -30,7 +30,7 @@ class System: public ISystem {
     void setTargetIp(const int64_t target_ip) override;
 
     bool IsDeviceModelSupported(DeviceInfo device_info);
-    void configureAddressIpAuto(std::vector<DeviceInfo> devices_info);
+    void configureAddressIpAuto(const std::vector<DeviceInfo>& devices_info);
     void configureAddressIpAuto(DeviceInfo device_info);
 
    private:

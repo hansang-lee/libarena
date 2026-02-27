@@ -1,5 +1,6 @@
 #include "camera/lucid/network.hpp"
 #include "camera/exception.h"
+#include <random>
 
 namespace camera {
 namespace lucid {
@@ -7,16 +8,22 @@ namespace network {
 
 namespace {
 uint32_t generateIpAddress(uint32_t ip_address, uint32_t subnet_mask) {
-    uint32_t new_ip_address(0);
-    uint32_t rand_num = static_cast<uint32_t>(std::rand()) & (~subnet_mask);
-    while (rand_num == 0 || rand_num == 0xFFFFFFFF || new_ip_address == 0 || new_ip_address == ip_address) {
-        rand_num       = static_cast<uint32_t>(std::rand()) & (~subnet_mask);
+    static std::random_device               rd;
+    static std::mt19937                     gen(rd());
+    std::uniform_int_distribution<uint32_t> dist(1, ~subnet_mask - 1);
+
+    uint32_t rand_num       = dist(gen);
+    uint32_t new_ip_address = (ip_address & subnet_mask) | rand_num;
+
+    int safety_counter = 0;
+    while ((new_ip_address == 0 || new_ip_address == ip_address) && safety_counter++ < 100) {
+        rand_num       = dist(gen);
         new_ip_address = (ip_address & subnet_mask) | rand_num;
     }
     return new_ip_address;
 }
 
-bool containDuplicate(std::vector<uint32_t>& values, const uint32_t value) {
+bool containDuplicate(const std::vector<uint32_t>& values, const uint32_t value) {
     for (const auto& v : values) {
         if (v == value) {
             return true;

@@ -101,7 +101,7 @@ struct DeviceParameters {
      * @param value ["Digital" / "Sensor"] Digitals is binning performed on the FPGA and Sensor is binning performed on the sensor. To enable binning feature, please select "Digital".
      * @note default is "Digital".
      */
-    std::string binning_selector = "Digital";
+    const char* binning_selector = "Digital";
 
     /**
      * @brief Ratio to combine adjacent pixels in the vertical direction into a single binned pixel. This is a technique in digital imaging where adjacent pixels in the vertical direction are combined to form a single "binned" pixel. It could result in increased sensitivity and reduced noise, but with a lower resolution in the vertical dimension.
@@ -121,28 +121,28 @@ struct DeviceParameters {
      * "Average" is when multiple pixels combine to form 1 pixel by averaging pixels. This method can result in less noisy images.
      * @note default is "Average".
      */
-    std::string binning_vertical_mode = "Average";
+    const char* binning_vertical_mode = "Average";
 
     /**
      * @brief
      * @param  value ["Low" / "High"]
      * @note default is "High".
      */
-    std::string conversion_gain = "High";
+    const char* conversion_gain = "High";
 
     /**
-     * @brief Enable auto exposure time adjustment.
-     * @param value "Continuous" / "Off"
-     * @note default is "Continuous"
+     * @brief Exposure auto mode of the device.
+     * @param value [in] "Off" / "Once" / "Continuous"
+     * @note default is "Once".
      */
-    std::string exposure_auto = "Continuous";
+    const char* exposure_auto = "Once";
 
     /**
      * @brief
      * @param value "Continuous" / "Off"
      * @note default is "Continuous"
      */
-    std::string exposure_auto_limit_auto = "Continuous";
+    const char* exposure_auto_limit_auto = "Continuous";
 
     /**
      * @brief Least value for exposure time which could reach to under auto-exposure condition.
@@ -172,7 +172,7 @@ struct DeviceParameters {
      * @param value "Continuous" / "Off"
      * @note default is "Continuous".
      */
-    std::string gain_auto = "Continuous";
+    const char* gain_auto = "Continuous";
 
     /**
      * @brief Controls whether the dhcp ip configuration scheme is activated on the given logical link.
@@ -194,7 +194,7 @@ struct DeviceParameters {
      * @note default destination ip is determined automatically by host which handshakes with devices.
      * If the multicast mode is activated, the destination ip must be in the range of [224.0.0.0, 239.255.255.255].
      */
-    std::string gev_scda = "0.0.0.0";
+    const char* gev_scda = "0.0.0.0";
 
     /**
      * @brief Height of the image (in pixels).
@@ -208,7 +208,7 @@ struct DeviceParameters {
      * @param value "Mono8" / "Mono10" / "Mono10p" / "Mono10Packed" / "Mono12" / "Mono12p" / "Mono12Packed" / "Mono16" / "BayerRG8" / "BayerRG10" / "BayerRG10p" / "BayerRG10Packed" / "BayerRG12" / "BayerRG12p" / "BayerRG12Packed" / "BayerRG16" / "RGB8" / "BGR8" / "YCbCr8" / "YCbCr8_CbYCr" / "YUV422_8" / "YUV422_8_UYVY" / "YCbCr411_8" / "YUV411_8_UYYVYY".
      * @note default is BayerRG8.
      */
-    std::string pixel_format = "BayerRG8";
+    const char* pixel_format = "BayerRG8";
 
     /**
      * @brief Enable the Precision Time Protocol (PTP).
@@ -250,7 +250,7 @@ struct DeviceParameters {
      * @param value "OldestFirst" / "OldestFirstOverwrite" / "NewestOnly"
      * @note default is "OldestFirst".
      */
-    std::string stream_buffer_handling_mode = "OldestFirst";
+    const char* stream_buffer_handling_mode = "OldestFirst";
 
     /**
      * @brief Enable to stream packets in multicast mode.
@@ -278,21 +278,21 @@ struct DeviceParameters {
      * @param value "Basic" / "Automatic" / "UserControlled"
      * @note default is "UserControlled"
      */
-    std::string transfer_control_mode = "UserControlled";
+    const char* transfer_control_mode = "UserControlled";
 
     /**
      * @brief
      * @param value "Continuous" / "MultiBlock"
      * @note default is "Continuous".
      */
-    std::string transfer_operation_mode = "Continuous";
+    const char* transfer_operation_mode = "Continuous";
 
     /**
      * @brief
      * @param value "RisingEdge" / "FallingEdge" / "AnyEdge"
      * @note default is "RisingEdge"
      */
-    std::string trigger_activation = "RisingEdge";
+    const char* trigger_activation = "RisingEdge";
 
     /**
      * @brief
@@ -306,35 +306,35 @@ struct DeviceParameters {
      * @param value "Off" / "OneLine"
      * @note default is "Off"
      */
-    std::string trigger_latency = "Off";
+    const char* trigger_latency = "Off";
 
     /**
      * @brief Activate trigger mode.
      * @param value "On" / "Off"
      * @note default is "Off".
      */
-    std::string trigger_mode = "Off";
+    const char* trigger_mode = "Off";
 
     /**
      * @brief
      * @param value "Off" / "ReadOut" / "PreviousFrame"
      * @note default is "Off"
      */
-    std::string trigger_overlap = "Off";
+    const char* trigger_overlap = "Off";
 
     /**
      * @brief Trigger type of the device.
      * @param value [in] "AcquisitionStart" / "FrameStart" / "FrameBurstStart" / "ExposureActive" / "LineStart"
      * @note default is "FrameStart".
      */
-    std::string trigger_selector = "FrameStart";
+    const char* trigger_selector = "FrameStart";
 
     /**
      * @brief Trigger mode of the device. The feature is only activated when trigger mode is enabled.
      * @param value "Software" / "Line[0:8]" / "Action0" / "Encoder0"
      * @note default is "Action0".
      */
-    std::string trigger_source = "Action0";
+    const char* trigger_source = "Action0";
 
     /**
      * @brief Width of the image (in pixels).

@@ -63,7 +63,7 @@ const std::vector<DeviceInfo> System::scan(const int timeout_ms) {
     removeDuplicate_(last_scanned_devices_info_);
 
     std::vector<DeviceInfo> devices_info;
-    for (auto info : last_scanned_devices_info_) {
+    for (auto& info : last_scanned_devices_info_) {
         DeviceInfo t_device_info;
         t_device_info.device_version        = std::string(info.DeviceVersion().c_str());
         t_device_info.model                 = std::string(info.ModelName().c_str());
@@ -127,7 +127,7 @@ bool System::IsDeviceModelSupported(DeviceInfo device_info) {
     return (utils::parseModel(device_info.model) != Model::UNKNOWN);
 }
 
-void System::configureAddressIpAuto(std::vector<DeviceInfo> devices_info) {
+void System::configureAddressIpAuto(const std::vector<DeviceInfo>& devices_info) {
     if (arena_system_ == nullptr) {
         return;  // system is not initialized
     }
@@ -175,14 +175,12 @@ void System::configureAddressIpAuto(DeviceInfo device_info) {
 void System::removeDuplicate_(std::vector<Arena::DeviceInfo>& arena_device_info) {
     std::sort(arena_device_info.begin(), arena_device_info.end(),
               [](Arena::DeviceInfo& a, Arena::DeviceInfo& b) { return a.SerialNumber() < b.SerialNumber(); });
-    std::vector<Arena::DeviceInfo> filtered;
-    for (auto& info : arena_device_info) {
-        if (filtered.empty() || filtered.back().SerialNumber() != info.SerialNumber()) {
-            filtered.push_back(info);
-        }
-    }
-    arena_device_info.clear();
-    arena_device_info = std::vector<Arena::DeviceInfo>(filtered.begin(), filtered.end());
+
+    auto it =
+        std::unique(arena_device_info.begin(), arena_device_info.end(),
+                    [](Arena::DeviceInfo& a, Arena::DeviceInfo& b) { return a.SerialNumber() == b.SerialNumber(); });
+
+    arena_device_info.erase(it, arena_device_info.end());
 }
 
 std::shared_ptr<IDevice> System::updateDevice_(DeviceInfo device_info) {

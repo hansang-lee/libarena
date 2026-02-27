@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <string>
+#include <unordered_map>
 
 namespace camera {
 namespace lucid {
@@ -790,9 +791,13 @@ class Config {
      */
     [[nodiscard]] int64_t getWidthMax() const;
 
+    GenApi::INodeMap* findNodeMap_(const char* node);
+
    private:
-    Arena::ISystem* system_;
-    Arena::IDevice* device_;
+    Arena::ISystem* arena_system_ = nullptr;
+    Arena::IDevice* arena_device_ = nullptr;
+
+    std::unordered_map<std::string, GenApi::INodeMap*> node_map_cache_;
 };
 
 }  // namespace lucid
